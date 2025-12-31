@@ -23,15 +23,35 @@ public class JwtService {
         return Keys.hmacShaKeyFor(jwtSecretKey.getBytes(StandardCharsets.UTF_8));
     }
 
-    public  String generateToken(User user){
+    public  String generateAccessToken(User user){
         return Jwts.builder()
                 .subject(user.getId().toString())
                 .claim("username",user.getUsername())
                 .claim("name",user.getName())
                 .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis()+ 1000 * 60))
+                .signWith(getSecretKey())
+                .compact();
+    }
+
+    public  String generateRefreshToken(User user){
+        return Jwts.builder()
+                .subject(user.getId().toString())
+                .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis()+1000*60*10))
                 .signWith(getSecretKey())
                 .compact();
+    }
+
+    public Long getUserIdFromRefreshToken(String token){
+        Claims claims = Jwts.parser()
+                .verifyWith(getSecretKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+
+        Long userId =Long.parseLong(claims.getSubject());
+        return  userId;
     }
 
     public JwtUserPrincipal getUserIdFromToken(String token){

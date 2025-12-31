@@ -5,13 +5,14 @@ import com.chetan.security.dtos.auth.LoginResponse;
 import com.chetan.security.dtos.auth.SignupRequest;
 import com.chetan.security.dtos.auth.SignupResponse;
 import com.chetan.security.service.AuthService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import lombok.experimental.NonFinal;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -27,7 +28,12 @@ public class AuthController {
     }
 
     @PostMapping("/logIn")
-    public LoginResponse login(@RequestBody LoginRequest loginRequest){
-        return authService.login(loginRequest);
+    public LoginResponse login(@RequestBody LoginRequest loginRequest, HttpServletResponse response ){
+        return authService.login(loginRequest,response);
+    }
+
+    @PostMapping("/refresh")
+    public LoginResponse refresh(HttpServletRequest request){
+        return authService.getRefreshToken(request);
     }
 }

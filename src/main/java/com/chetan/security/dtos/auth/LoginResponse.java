@@ -1,7 +1,8 @@
 package com.chetan.security.dtos.auth;
 
 public record LoginResponse(
-        String token,
+        String accessToken,
+        String refreshToken,
         Long id,
         String name
 ) {
