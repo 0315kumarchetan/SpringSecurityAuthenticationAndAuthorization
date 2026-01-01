@@ -19,8 +19,16 @@ public class UserService implements UserDetailsService {
 
     UserRepository userRepository;
 
+    public User saveUser(User user){
+        return userRepository.save(user);
+    }
+
     public List<User> getUsers(){
         return userRepository.findAll();
+    }
+
+    public User findByEmail(String username){
+        return userRepository.findByUsername(username).orElse(null);
     }
 
     @Override

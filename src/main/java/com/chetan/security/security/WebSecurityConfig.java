@@ -1,5 +1,6 @@
 package com.chetan.security.security;
 
+import com.chetan.security.handler.OAuth2SuccessHandler;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -20,6 +21,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class WebSecurityConfig {
 
     JwtAuthFilter jwtAuthFilter;
+    OAuth2SuccessHandler oAuth2SuccessHandler;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity){
@@ -27,9 +29,13 @@ public class WebSecurityConfig {
                 .csrf(csrfConfigurer -> csrfConfigurer.disable())
                 .sessionManagement(session ->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS) )
                 .authorizeHttpRequests(auth -> auth
-                                .requestMatchers("/api/auth/**").permitAll()
+                                .requestMatchers("/api/auth/**","/home.html").permitAll()
                                 .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                .oauth2Login(oauth2Config ->{
+                    oauth2Config.failureUrl("/login?error=true")
+                            .successHandler(oAuth2SuccessHandler);
+                })
                 .build();
     }
 
