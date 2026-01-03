@@ -2,6 +2,7 @@ package com.chetan.security.handler;
 
 import com.chetan.security.entity.User;
 import com.chetan.security.security.JwtService;
+import com.chetan.security.service.SessionService;
 import com.chetan.security.service.UserService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -25,6 +26,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
     private final UserService userService;
     private final JwtService jwtService;
+    private final SessionService sessionService;
     @Value("${deploy.env}")
     private String deployEnv;
 
@@ -43,7 +45,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         }
         String accessToken = jwtService.generateAccessToken(userFromDb);
         String refreshToken = jwtService.generateRefreshToken(userFromDb);
-
+        sessionService.createNewSession(userFromDb,refreshToken);
         Cookie cookie = new Cookie("RefreshToken",refreshToken);
         cookie.setSecure("production".equals(deployEnv));
         cookie.setHttpOnly(true);

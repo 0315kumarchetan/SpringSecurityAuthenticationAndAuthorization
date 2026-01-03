@@ -4,6 +4,7 @@ import com.chetan.security.dtos.auth.LoginRequest;
 import com.chetan.security.dtos.auth.LoginResponse;
 import com.chetan.security.dtos.auth.SignupRequest;
 import com.chetan.security.dtos.auth.SignupResponse;
+import com.chetan.security.entity.Session;
 import com.chetan.security.entity.User;
 import com.chetan.security.repository.UserRepository;
 import com.chetan.security.security.JwtService;
@@ -34,6 +35,7 @@ public class AuthService {
     PasswordEncoder passwordEncoder;
     JwtService jwtService;
     AuthenticationManager authenticationManager;
+    SessionService sessionService;
     @NonFinal
     @Value("${deploy.env}")
     String deployEnv;
@@ -61,6 +63,7 @@ public class AuthService {
         if(user==null)throw new AuthenticationCredentialsNotFoundException("User principal not found");
         String accessToken =  jwtService.generateAccessToken(user);
         String refreshToken =  jwtService.generateRefreshToken(user);
+        sessionService.createNewSession(user,refreshToken);
         Cookie cookie = new Cookie("RefreshToken",refreshToken);
         cookie.setHttpOnly(true);
         cookie.setSecure("production".equals(deployEnv));
@@ -76,6 +79,7 @@ public class AuthService {
                 .orElseThrow(()->new AuthenticationServiceException("Refresh token not found!"));
 
         Long  userId = jwtService.getUserIdFromRefreshToken(refreshToken);
+        sessionService.validateSession(refreshToken);
         User user  = userRepository.findById(userId).orElseThrow();
         String accessToken =  jwtService.generateAccessToken(user);
         return new LoginResponse(accessToken,refreshToken,user.getId(),user.getName());
